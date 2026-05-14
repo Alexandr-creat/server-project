@@ -1,5 +1,5 @@
 ---
-- name: Deploy notes-app
+- name: Deploy server-project
   hosts: servers
   become: yes
 
@@ -14,31 +14,26 @@
       ansible.builtin.service:
         name: docker
         state: started
-        enabled: yes
+        enable: yes
 
-    - name: Copy app files
+    - name: Install Docker compose
+      apt:
+        name: docker-compose
+        state: present
+
+    - name: Clone server-project
       git:
-        repo: https://github.com/Alexandr-creat/notes-app.git
-        dest: /home/alexandr/notes-app
+        repo: https://github.com/Alexandr-creat/server-project.git
+        dest: /home/alexandr/server-project
         force: yes
 
-    - name: Build Docker image
-      command: docker build -t notes-app /home/alexandr/notes-app/
-      
-    - name: Install pip3
-      apt:
-        name: python3-pip
-        state: present
-  
-    - name: Install Docker SDK for Python
-      pip: 
-        name: docker
-        state: present
-        extra_args: --break-system-packages
+    - name: Stop old containers
+      command: docker-compose down
+      args:
+        chdir: /home/alexandr/server-project
+      ignore-errors: yes
 
-    - name: Remove old container
-      command: docker rm -f notes
-      ignore_errors: yes
-
-    - name: Run container
-      command: docker run -d --name notes --restart always -p 5000:5000 -v /home/alexandr/notes-data:/data notes-app
+    - name: Run docker-compose
+      command: docker-compose up -d
+      args:
+        chdir: /home/alexandr/server-project
