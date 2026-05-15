@@ -9,12 +9,13 @@
         name: docker.io
         state: present
         update_cache: yes
+        force_apt_get: yes
 
     - name: Start Docker service
-      ansible.builtin.service:
+      service:
         name: docker
         state: started
-        enable: yes
+        enabled: yes
 
     - name: Install Docker compose
       apt:
@@ -27,13 +28,17 @@
         dest: /home/alexandr/server-project
         force: yes
 
+    - name: Delete old notes
+      command: docker rm -f notes
+      ignore_errors: yes
+
     - name: Stop old containers
-      command: docker-compose down
+      command: docker compose down
       args:
         chdir: /home/alexandr/server-project
-      ignore-errors: yes
+      ignore_errors: yes
 
     - name: Run docker-compose
-      command: docker-compose up -d
+      command: docker compose up -d
       args:
         chdir: /home/alexandr/server-project
