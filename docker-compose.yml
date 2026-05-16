@@ -12,6 +12,17 @@ services:
     networks:
       - monitoring
 
+  todolist-app:
+    build: ./todolist-app
+    container_name: todolist
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./todo-data:/data
+    restart: always
+    networks:
+      - monitoring
+
   node-exporter:
     image: prom/node-exporter
     container_name: node-exporter
